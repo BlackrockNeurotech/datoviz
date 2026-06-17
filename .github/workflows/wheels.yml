@@ -63,9 +63,9 @@ jobs:
         env:
           DVZ_WHEEL_RUNTIME_DIRS: /usr/lib/${{ matrix.gnu_triplet }}
         run: |
-          python -m pip wheel . --no-build-isolation --no-deps -w wheelhouse \
-            -C datoviz.release-wheel=true \
-            -C datoviz.platform-tag=${{ matrix.platform_tag }}
+          python tools/release_wheels/build_wheel.py \
+            --dist-dir wheelhouse \
+            --platform-tag ${{ matrix.platform_tag }}
       - name: Inspect wheels
         run: |
           for whl in wheelhouse/*.whl; do
@@ -107,9 +107,9 @@ jobs:
       - name: Build wheels
         run: |
           export DVZ_WHEEL_RUNTIME_DIRS="$(brew --prefix shaderc)/lib:$(brew --prefix vulkan-loader)/lib:$(brew --prefix molten-vk)/lib:$(brew --prefix molten-vk)/share/vulkan/icd.d"
-          python -m pip wheel . --no-build-isolation --no-deps -w wheelhouse \
-            -C datoviz.release-wheel=true \
-            -C datoviz.platform-tag=${{ matrix.platform_tag }}
+          python tools/release_wheels/build_wheel.py \
+            --dist-dir wheelhouse \
+            --platform-tag ${{ matrix.platform_tag }}
       - name: Inspect wheels
         run: |
           for whl in wheelhouse/*.whl; do
@@ -173,9 +173,9 @@ jobs:
       - name: Build wheels
         shell: pwsh
         run: |
-          python -m pip wheel . --no-build-isolation --no-deps -w wheelhouse `
-            -C datoviz.release-wheel=true `
-            -C datoviz.platform-tag=${{ matrix.platform_tag }}
+          python tools/release_wheels/build_wheel.py `
+            --dist-dir wheelhouse `
+            --platform-tag ${{ matrix.platform_tag }}
       - name: Inspect wheels
         shell: pwsh
         run: |

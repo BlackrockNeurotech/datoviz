@@ -187,9 +187,9 @@ It has no scheduled trigger. Dispatch it only after the local backend scripts an
 targeted branch run have proven the path. Keep `.github/workflows-draft/wheels.yml` as a staging
 reference for major workflow rewrites.
 
-The workflow uses `python -m pip wheel` with Datoviz release-wheel config settings, not
-`cibuildwheel`. The wheel policy source of truth is `[tool.datoviz.wheel]` in `pyproject.toml` and
-the backend under `tools/datoviz_build_backend/`.
+The workflow uses the Datoviz release wrapper under `tools/release_wheels/`, not `cibuildwheel`.
+The wheel policy source of truth is `[tool.datoviz.wheel]` in `pyproject.toml` and the backend under
+`tools/datoviz_build_backend/`.
 
 Before relying on a run for release evidence:
 
