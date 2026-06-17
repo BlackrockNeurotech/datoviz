@@ -63,6 +63,7 @@ jobs:
         env:
           DVZ_WHEEL_RUNTIME_DIRS: /usr/lib/${{ matrix.gnu_triplet }}
         run: |
+          python tools/release_wheels/stage_wheel.py --clean
           python tools/release_wheels/build_wheel.py \
             --dist-dir wheelhouse \
             --platform-tag ${{ matrix.platform_tag }}
@@ -107,6 +108,7 @@ jobs:
       - name: Build wheels
         run: |
           export DVZ_WHEEL_RUNTIME_DIRS="$(brew --prefix shaderc)/lib:$(brew --prefix vulkan-loader)/lib:$(brew --prefix molten-vk)/lib:$(brew --prefix molten-vk)/share/vulkan/icd.d"
+          python tools/release_wheels/stage_wheel.py --clean
           python tools/release_wheels/build_wheel.py \
             --dist-dir wheelhouse \
             --platform-tag ${{ matrix.platform_tag }}
@@ -173,6 +175,7 @@ jobs:
       - name: Build wheels
         shell: pwsh
         run: |
+          python tools/release_wheels/stage_wheel.py --clean
           python tools/release_wheels/build_wheel.py `
             --dist-dir wheelhouse `
             --platform-tag ${{ matrix.platform_tag }}
