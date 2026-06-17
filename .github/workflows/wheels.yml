@@ -23,17 +23,19 @@ jobs:
 
   linux:
     needs: matrix
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
           - arch: x86_64
+            runner: ubuntu-latest
             platform_tag: manylinux_2_34_x86_64
             gnu_triplet: x86_64-linux-gnu
           - arch: aarch64
+            runner: ubuntu-24.04-arm
             platform_tag: manylinux_2_34_aarch64
             gnu_triplet: aarch64-linux-gnu
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -61,7 +63,7 @@ jobs:
         env:
           DVZ_WHEEL_RUNTIME_DIRS: /usr/lib/${{ matrix.gnu_triplet }}
         run: |
-          python -m pip wheel . --no-deps -w wheelhouse \
+          python -m pip wheel . --no-build-isolation --no-deps -w wheelhouse \
             -C datoviz.release-wheel=true \
             -C datoviz.platform-tag=${{ matrix.platform_tag }}
       - name: Inspect wheels
@@ -105,7 +107,7 @@ jobs:
       - name: Build wheels
         run: |
           export DVZ_WHEEL_RUNTIME_DIRS="$(brew --prefix shaderc)/lib:$(brew --prefix vulkan-loader)/lib:$(brew --prefix molten-vk)/lib:$(brew --prefix molten-vk)/share/vulkan/icd.d"
-          python -m pip wheel . --no-deps -w wheelhouse \
+          python -m pip wheel . --no-build-isolation --no-deps -w wheelhouse \
             -C datoviz.release-wheel=true \
             -C datoviz.platform-tag=${{ matrix.platform_tag }}
       - name: Inspect wheels
@@ -119,15 +121,17 @@ jobs:
           path: wheelhouse/*.whl
 
   windows:
-    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
         include:
           - arch: AMD64
+            runner: windows-latest
             platform_tag: win_amd64
           - arch: ARM64
+            runner: windows-11-arm
             platform_tag: win_arm64
+    runs-on: ${{ matrix.runner }}
     env:
       VCPKG_ROOT: C:/vcpkg
     steps:
@@ -169,7 +173,7 @@ jobs:
       - name: Build wheels
         shell: pwsh
         run: |
-          python -m pip wheel . --no-deps -w wheelhouse `
+          python -m pip wheel . --no-build-isolation --no-deps -w wheelhouse `
             -C datoviz.release-wheel=true `
             -C datoviz.platform-tag=${{ matrix.platform_tag }}
       - name: Inspect wheels
