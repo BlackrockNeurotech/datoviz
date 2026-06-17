@@ -191,6 +191,20 @@ The workflow uses the Datoviz release wrapper under `tools/release_wheels/`, not
 The wheel policy source of truth is `[tool.datoviz.wheel]` in `pyproject.toml` and the backend under
 `tools/datoviz_build_backend/`.
 
+CI-specific constraints:
+
+- Use `tools/release_wheels/stage_wheel.py` followed by `tools/release_wheels/build_wheel.py` for
+  release wheels. Raw `pip wheel` is still useful for normal package-build delegation, but the
+  release workflow depends on the staged native payload and backend config.
+- Run `just ctypes` after `just build` and before staging. The generated `datoviz/_ctypes.py` file
+  is part of the wheel payload and `import datoviz.raw` fails without it.
+- Install `tomli` in smoke jobs, even when most lanes use newer Python. Python 3.10 check scripts
+  need it as the `tomllib` fallback.
+- Run Linux `aarch64` and Windows `ARM64` jobs on native hosted ARM runners when available. Cross
+  assumptions can hide architecture-specific build flags and runtime inventory issues.
+- Treat repair-added wheel tags as valid only when the expected release tag is still present.
+  Repair tools may add compatibility tags to filenames and `WHEEL` metadata.
+
 Before relying on a run for release evidence:
 
 1. `just wheel-ci-local <host-platform-tag>` passes on each maintained host OS;

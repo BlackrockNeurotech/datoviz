@@ -336,4 +336,7 @@ A future agent can implement this end to end from this document plus the current
 6. delete or quarantine obsolete cibuildwheel configuration last.
 
 The highest-risk details are metadata parity, valid `RECORD` generation, repair tools that rewrite
-wheel contents, and keeping normal Python installs independent of native build artifacts.
+wheel contents, and keeping normal Python installs independent of native build artifacts. Repair
+tools may also add platform compatibility tags to the filename and `WHEEL` metadata, so validators
+must parse the platform tag field as a dotted tag list and require the expected tag without
+rejecting repair-added compatible tags.
