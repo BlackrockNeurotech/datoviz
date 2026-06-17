@@ -51,7 +51,7 @@ jobs:
             ccache glslang-tools glslc libshaderc-dev libvulkan-dev \
             libgl1-mesa-dev \
             libx11-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev
-          python -m pip install -U pip build auditwheel
+          python -m pip install -U pip build auditwheel libclang tqdm
           command -v ccache
           command -v glslc
           command -v glslangValidator
@@ -59,6 +59,7 @@ jobs:
       - name: Build native artifacts
         run: |
           just build
+          just ctypes
       - name: Build wheels
         env:
           DVZ_WHEEL_RUNTIME_DIRS: /usr/lib/${{ matrix.gnu_triplet }}
@@ -99,12 +100,13 @@ jobs:
       - name: Dependencies
         run: |
           brew install just ccache ninja jq glslang shaderc vulkan-headers vulkan-loader molten-vk freetype tinyxml2
-          python -m pip install -U pip build delocate
+          python -m pip install -U pip build delocate libclang tqdm
           command -v glslangValidator
           command -v delocate-listdeps
       - name: Build native artifacts
         run: |
           just build
+          just ctypes
       - name: Build wheels
         run: |
           export DVZ_WHEEL_RUNTIME_DIRS="$(brew --prefix shaderc)/lib:$(brew --prefix vulkan-loader)/lib:$(brew --prefix molten-vk)/lib:$(brew --prefix molten-vk)/share/vulkan/icd.d"
@@ -165,13 +167,14 @@ jobs:
         shell: pwsh
         run: |
           choco install just mingw cmake ninja jq ccache -y
-          python -m pip install -U pip build delvewheel
+          python -m pip install -U pip build delvewheel libclang tqdm
           Get-Command ccache
           python -c "import delvewheel"
       - name: Build native artifacts
         shell: pwsh
         run: |
           just build
+          just ctypes
       - name: Build wheels
         shell: pwsh
         run: |
@@ -207,7 +210,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Dependencies
-        run: python -m pip install -U pip wheel
+        run: python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
         run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
 
@@ -226,7 +229,7 @@ jobs:
           python-version: "3.15-dev"
           allow-prereleases: true
       - name: Dependencies
-        run: python -m pip install -U pip wheel
+        run: python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
         run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
 
@@ -254,7 +257,7 @@ jobs:
       - name: Dependencies
         run: |
           brew install ninja
-          python -m pip install -U pip wheel
+          python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
         run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
 
@@ -278,7 +281,7 @@ jobs:
         shell: pwsh
         run: |
           choco install ninja -y
-          python -m pip install -U pip wheel
+          python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
         shell: pwsh
         run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --cmake-consumer --qt-probe optional
