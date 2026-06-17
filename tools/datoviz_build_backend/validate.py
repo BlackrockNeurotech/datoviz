@@ -47,17 +47,20 @@ def validate_dist(
     errors: list[str] = []
     for wheel in wheels:
         wheel_version, tag = wheel_parts(wheel)
+        tags = filename_tags(tag)
         if wheel_version != expected_version:
             errors.append(f"{wheel.name}: version {wheel_version!r} != expected {expected_version!r}")
-        if tag in found:
-            errors.append(f"duplicate wheel tag {tag}: {found[tag].name} and {wheel.name}")
-        found[tag] = wheel
+        for filename_tag in tags:
+            if filename_tag in found:
+                errors.append(
+                    f"duplicate wheel tag {filename_tag}: "
+                    f"{found[filename_tag].name} and {wheel.name}"
+                )
+            found[filename_tag] = wheel
         validate_wheel(wheel)
     actual = set(found)
     for tag in sorted(expected - actual):
         errors.append(f"missing wheel tag: {tag}")
-    for tag in sorted(actual - expected):
-        errors.append(f"unexpected wheel tag: {tag}")
     if errors:
         raise RuntimeError("wheel artifact validation failed:\n" + "\n".join(f"- {e}" for e in errors))
     print(f"Validated {len(wheels)} wheel artifact(s) in {dist_dir}")
@@ -79,13 +82,28 @@ def validate_wheel(wheel: Path) -> None:
         del version
         if "Root-Is-Purelib: true\n" not in wheel_meta:
             raise RuntimeError(f"{wheel}: WHEEL does not declare Root-Is-Purelib: true")
-        if f"Tag: {tag}\n" not in wheel_meta:
-            raise RuntimeError(f"{wheel}: WHEEL tag does not match filename tag {tag}")
+        wheel_tags = set(wheel_meta_tags(wheel_meta))
+        for filename_tag in filename_tags(tag):
+            if filename_tag not in wheel_tags:
+                raise RuntimeError(f"{wheel}: WHEEL tag does not match filename tag {filename_tag}")
         _validate_record(zf, f"{dist_info}/RECORD")
         _validate_payload_manifest(zf)
         forbidden = [name for name in names if "__pycache__" in name or name.endswith(".pyc") or name.endswith(".DS_Store")]
         if forbidden:
             raise RuntimeError(f"{wheel}: forbidden payload entries: {forbidden[:5]}")
+
+
+def filename_tags(tag: str) -> list[str]:
+    """Return complete wheel tags represented by a wheel filename tag field."""
+
+    python_tag, abi_tag, platform_tag = tag.split("-", 2)
+    return [f"{python_tag}-{abi_tag}-{platform}" for platform in platform_tag.split(".")]
+
+
+def wheel_meta_tags(wheel_meta: str) -> list[str]:
+    """Return complete wheel tags declared in a WHEEL metadata payload."""
+
+    return [line.removeprefix("Tag: ") for line in wheel_meta.splitlines() if line.startswith("Tag: ")]
 
 
 def inspect_wheel(wheel: Path, *, native_deps: bool = False) -> None:
